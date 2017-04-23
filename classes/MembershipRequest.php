@@ -1,6 +1,10 @@
 <?php
 require("../Controller/config.php");
 
+/**
+ * Description : Use this class to approve requests. approved members will be added to the wordpress database
+ * */
+
 class MembershipRequest
 {
     private $wp_host = wp_host;

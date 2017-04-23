@@ -5,7 +5,7 @@
 define("wp_host","localhost");
 define("wp_db_username","root");
 define("wp_db_password","");
-define("wp_database","instagram");
+define("wp_database","wordpress3");
 
 /*
 ** Student Registration system database information. Change them if the database details changed.
