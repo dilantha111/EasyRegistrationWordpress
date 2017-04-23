@@ -23,6 +23,7 @@ if(
             $_SESSION['year'] = $result1['year'];
             $_SESSION['email'] = $result1['email'];
             $_SESSION['username'] = $result1['username'];
+            $_SESSION['ID'] = $result1['ID'];
             header("Location: ../admin/dashboard.php");
         }else{
             header("Location: ../message.php?login_error=1");

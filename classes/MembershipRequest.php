@@ -86,13 +86,55 @@ class MembershipRequest
         }
     }
 
-    private function revertBackAproveRequest(){
+    /*
+     * To remove tokens because after registration they are no longer needed
+     * */
+    private function removeToken($token){
+        try{
+            $sql0 = "DELETE FROM `tokens` WHERE `token` = '".$token."'";
+            $st = $this->sr_conn->prepare($sql0);
+            return $st->execute();
+        }catch (Exception $ex){
+            return false;
+        }
+    }
+
+    private function revertBackAproveRequest($token){
         $sql0 = "UPDATE `registration` SET `registered` = 0,`cordID` = '' WHERE `ID` =".
         "(SELECT ID FROM `tokens` WHERE `token` = '" . $token . "')";
         $st = $this->sr_conn->prepare($sql0);
         $st->execute();
     }
 
+    /*
+     * Check whether token is correct
+     * */
+    public function check($token){
+        try{
+            $sql0 = "SELECT * FROM `registration` WHERE `ID` = ".
+                "(SELECT ID FROM `tokens` WHERE `token` = '".$token."')";
+            $st = $this->sr_conn->prepare($sql0);
+            $st->execute();
+            $result = $st->fetchAll();
+            if(count($result)){
+                $result = $result[0];
+                return array(
+                    "username" => $result['username'],
+                    "displayName" => $result['displayName'],
+                    "email" => $result['email']
+                );
+            }else{
+                return false;
+            }
+
+        }catch (Exception $ex){
+            return false;
+        }
+    }
+
+    /*
+     * Adding to the WordPress database. which means that registering members to the site.
+     * */
     public function ApproveRequest($token)
     {
         try {
@@ -119,20 +161,25 @@ class MembershipRequest
                     $nice_name = strtolower(str_replace(" ", "", $display_name));
 
                     if($this->addToWordPress($name,$password,$email,$display_name,$nice_name)){
-                        return true;
+                        $this->removeToken($token); // removing token from the table
+                        return array(
+                            "username" => $name,
+                            "display_name" => $display_name,
+                            "email" => $email
+                        );
                     }else{
-                        $this->revertBackAproveRequest();
+                        $this->revertBackAproveRequest($token);
                     }
                 } else {
-                    $this->revertBackAproveRequest();
+                    $this->revertBackAproveRequest($token);
                 }
 
             } else {
-                $this->revertBackAproveRequest();
+                $this->revertBackAproveRequest($token);
             }
 
         } catch (Exception $ex) {
-            $this->revertBackAproveRequest();
+            $this->revertBackAproveRequest($token);
             return false;
         }
 
